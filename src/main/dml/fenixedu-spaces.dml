@@ -175,6 +175,13 @@ relation BennuSpaceClassification {
 	}
 }
 
+relation BennuAllocatableSpaceClassification {
+    protected .org.fenixedu.bennu.core.domain.Bennu playsRole allocatableBennu;
+    SpaceClassification playsRole allocatableClassifications {
+        multiplicity *;
+    }
+}
+
 relation BennuSpaceGroups {
     protected .org.fenixedu.bennu.core.domain.Bennu playsRole bennu;
     .org.fenixedu.bennu.core.domain.groups.PersistentGroup playsRole groupForSpaces {

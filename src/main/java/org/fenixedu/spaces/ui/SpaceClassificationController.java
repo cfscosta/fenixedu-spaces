@@ -18,8 +18,13 @@
  */
 package org.fenixedu.spaces.ui;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.UnavailableException;
 
+import org.fenixedu.bennu.core.domain.Bennu;
 import org.fenixedu.bennu.core.domain.exceptions.DomainException;
 import org.fenixedu.bennu.core.groups.DynamicGroup;
 import org.fenixedu.bennu.core.security.Authenticate;
@@ -28,11 +33,14 @@ import org.fenixedu.spaces.domain.SpaceClassification;
 import org.fenixedu.spaces.ui.services.SpaceClassificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.RedirectView;
 
 import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.Atomic.TxMode;
@@ -70,6 +78,34 @@ public class SpaceClassificationController {
     public String edit(@RequestBody String informationJson) {
         canWrite();
         return create(null, informationJson);
+    }
+
+    @RequestMapping(value = "/editFilters", method = RequestMethod.GET)
+    public String editFilters(Model model) throws UnavailableException {
+        canWrite();
+        final List<SpaceClassification> allocatableClassifications =
+                Bennu.getInstance().getAllocatableClassificationsSet().stream().collect(Collectors.toList());
+        SpaceClassificationFilterBean spaceClassificationFilterBean = new SpaceClassificationFilterBean();
+        spaceClassificationFilterBean.setAllocatableClassifications(allocatableClassifications);
+        spaceClassificationFilterBean.setClassifications(SpaceClassification.all());
+        model.addAttribute("filterBean", spaceClassificationFilterBean);
+        return "classification/editFilters";
+    }
+
+    @RequestMapping(value = "/editFilters", method = RequestMethod.POST)
+    @ResponseBody
+    public RedirectView editFilters(Model model, @ModelAttribute SpaceClassificationFilterBean filterBean, BindingResult errors) {
+        canWrite();
+        editFilters(filterBean.getAllocatableClassifications());
+        return new RedirectView("/classification");
+    }
+
+    @Atomic(mode = TxMode.WRITE)
+    private void editFilters(List<SpaceClassification> allocatableClassifications) {
+        Bennu.getInstance().getAllocatableClassificationsSet().clear();
+
+        Bennu.getInstance().getAllocatableClassificationsSet()
+                .addAll(allocatableClassifications == null ? new HashSet<SpaceClassification>() : allocatableClassifications);
     }
 
     @Atomic(mode = TxMode.WRITE)

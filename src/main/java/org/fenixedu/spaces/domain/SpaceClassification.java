@@ -119,6 +119,13 @@ public class SpaceClassification extends SpaceClassification_Base {
         return null;
     }
 
+    public String getNameWithCode() {
+        if (!getAbsoluteCode().isEmpty()) {
+            return getAbsoluteCode() + " - " + getName().getContent();
+        }
+        return getName().getContent();
+    }
+
     public String getAbsoluteCode() {
         return getPath().stream().filter(c -> !c.getCode().isEmpty()).map(c -> c.getCode()).collect(Collectors.joining("."));
     }

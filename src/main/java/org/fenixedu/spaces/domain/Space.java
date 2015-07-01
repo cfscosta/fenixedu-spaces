@@ -430,6 +430,11 @@ public final class Space extends Space_Base implements Comparable<Space> {
         return Bennu.getInstance().getSpaceSet().stream();
     }
 
+    public static Stream<Space> getAllocatableSpaces() {
+        final Set<SpaceClassification> allocatableClassifications = Bennu.getInstance().getAllocatableClassificationsSet();
+        return getSpaces().filter(space -> allocatableClassifications.contains(space.getClassification()));
+    }
+
     @Override
     public int compareTo(Space o) {
         return getFullName().toLowerCase().compareTo(o.getFullName().toLowerCase());
